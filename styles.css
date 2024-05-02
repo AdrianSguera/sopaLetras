@@ -1,0 +1,37 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.container{
+    display: flex;
+    flex-direction: column;
+}
+
+#sopa-letras {
+    margin: 20px auto;
+}
+
+#sopa-letras table {
+    border-collapse: collapse;
+}
+
+#sopa-letras table td {
+    border: 1px solid black;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+}
+
+td {
+    cursor: pointer;
+}
+
+#loading {
+    display: none;
+}
+
+#loading img {
+    width: 100px;
+    height: auto;
+}
