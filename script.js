@@ -35,13 +35,15 @@ mostrarCargando();
 
 function obtenerPalabras() {
     mostrarCargando();
-    fetch('https://clientes.api.greenborn.com.ar/public-random-word')
+    fetch('https://random-word-api.herokuapp.com/word?lang=es')
         .then(response => response.json()) // Parsear la respuesta JSON
         .then(data => {
             // Verificar si la respuesta es un array y si contiene palabras
             if (Array.isArray(data) && data.length > 0) {
-                // Agregar las palabras obtenidas a la lista
-                data.forEach(palabra => agregarPalabra(palabra));
+                // Filtrar palabras que no contienen espacios en blanco
+                const palabrasValidas = data.filter(palabra => !palabra.includes(' '));
+                // Agregar las palabras válidas a la lista
+                palabrasValidas.forEach(palabra => agregarPalabra(palabra));
 
                 // Si aún se necesitan más palabras, llamar recursivamente a la función
                 if (palabras.length < cantidadPalabras) {
