@@ -25,6 +25,7 @@ body {
 
 td {
     cursor: pointer;
+    user-select: none;
 }
 
 #loading {
@@ -35,3 +36,14 @@ td {
     width: 100px;
     height: auto;
 }
+
+.configuracion{
+    display: flex;
+    flex-direction: column;
+}
+
+.configuracion label{
+    margin-top: 10px;
+}
+
+

@@ -1,13 +1,42 @@
-const tamaño = 20; // Tamaño de la sopa de letras
-const cantidadPalabras = 5; // Cantidad de palabras que deseas obtener
+let tamaño = 20; // Tamaño de la sopa de letras
+let cantidadPalabras = 5; // Cantidad de palabras que deseas obtener
 const palabras = [];
+let arrastre = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const tabla_size = document.getElementById('tabla_size');
+    const palabras_size = document.getElementById('palabras_size');
+    const btn = document.getElementById('btn');
+
+    function habilitarBoton() {
+        if (tabla_size.value.trim() !== '' && palabras_size.value.trim() !== '') {
+            btn.removeAttribute('disabled');
+        } else {
+            btn.setAttribute('disabled', 'disabled');
+        }
+    }
+    document.getElementById('palabras-a-encontrar').style.display = 'none';
+    document.getElementById('loading').style.display = 'none';
+
+    tabla_size.addEventListener('input', habilitarBoton);
+    palabras_size.addEventListener('input', habilitarBoton);
+    document.addEventListener('mousedown', () => {
+        arrastre = true;
+    });
+    document.addEventListener('mouseup', () => {
+        arrastre = false;
+    });
+});
 
 function nuevaSopa() {
+    tamaño = document.getElementById('tabla_size').value;
+    cantidadPalabras = document.getElementById('palabras_size').value;
     palabras.splice(0, palabras.length);
-    document.querySelectorAll('table').forEach(tabla => {
-        tabla.style.display = 'none';
-    });
-    document.getElementById('palabras-a-encontrar').style.display = 'none';
+    if(document.querySelectorAll('table').length != 0){
+        document.querySelectorAll('table').forEach(tabla => {
+            tabla.style.display = 'none';
+        });
+    }
     obtenerPalabras();
 }
 
@@ -33,36 +62,64 @@ function mostrarCargando() {
 
 mostrarCargando();
 
+function cargarPalabrasAleatoriasDesdeArchivo(rutaArchivo, cantidadPalabras) {
+    return new Promise((resolve, reject) => {
+        const palabrasAleatorias = [];
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', rutaArchivo);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    const lineas = xhr.responseText.split('\n');
+                    const totalPalabras = lineas.length;
+                    for (let i = 0; i < cantidadPalabras; i++) {
+                        const indiceAleatorio = Math.floor(Math.random() * totalPalabras);
+                        const palabra = lineas[indiceAleatorio].trim();
+                        if (palabra !== '' && !palabrasAleatorias.includes(palabra)) {
+                            palabrasAleatorias.push(palabra);
+                        } else {
+                            i--; // Intentar nuevamente si la palabra ya está en el array
+                        }
+                    }
+                    resolve(palabrasAleatorias);
+                } else {
+                    reject(new Error('Error al cargar el archivo de palabras'));
+                }
+            }
+        };
+        xhr.send();
+    });
+}
+
 function obtenerPalabras() {
     mostrarCargando();
-    fetch('https://random-word-api.herokuapp.com/word?lang=es')
-        .then(response => response.json()) // Parsear la respuesta JSON
-        .then(data => {
-            // Verificar si la respuesta es un array y si contiene palabras
-            if (Array.isArray(data) && data.length > 0) {
-                // Filtrar palabras que no contienen espacios en blanco
-                const palabrasValidas = data.filter(palabra => !palabra.includes(' '));
-                // Agregar las palabras válidas a la lista
-                palabrasValidas.forEach(palabra => agregarPalabra(palabra));
+
+    cargarPalabrasAleatoriasDesdeArchivo('spanish.txt', cantidadPalabras)
+        .then(palabras => {
+            for (let i = 0; i < palabras.length; i++) {
+                palabras[i] = convertirPalabra(palabras[i]);
+            }
+            // Verificar si se cargaron palabras aleatorias
+            if (palabras.length > 0) {
+                // Agregar las palabras aleatorias a la lista
+                palabras.forEach(palabra => agregarPalabra(palabra));
 
                 // Si aún se necesitan más palabras, llamar recursivamente a la función
                 if (palabras.length < cantidadPalabras) {
                     obtenerPalabras();
                 } else {
-                    for (let i = 0; i < palabras.length; i++) {
-                        palabras[i] = convertirPalabra(palabras[i]);
-                    }
                     generarSopa();
                     agregarEventoClic();
                     loading.style.display = 'none';
                     document.getElementById('palabras-a-encontrar').style.display = 'block';
                 }
             } else {
-                console.error('La respuesta no es un array válido o está vacío.');
+                console.error('No se cargaron palabras aleatorias válidas.');
             }
         })
-        .catch(error => console.error('Error al obtener la respuesta JSON:', error));
+        .catch(error => console.error('Error al cargar palabras aleatorias:', error));
 }
+
 
 function agregarPalabra(palabra) {
     palabras.push(palabra);
@@ -240,10 +297,13 @@ function agregarEventoClic() {
     // Agregar evento de click a cada celda de la tabla
     const celdas = document.querySelectorAll('td');
     celdas.forEach(celda => {
-        celda.addEventListener('click', function () {
+        celda.addEventListener('mousedown', function () {
             marcarCelda(this); // Llamar a la función para marcar la celda
+        });
+        celda.addEventListener('mouseenter', function() {
+            if(arrastre){
+                marcarCelda(celda);
+            }
         });
     });
 }
-
-obtenerPalabras();

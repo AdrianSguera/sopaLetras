@@ -11,6 +11,10 @@
 <body>
     <h1>Generador de Sopas de Letras</h1>
     <div class="container">
+        <div class="configuracion">
+            <label>Ingrese tamaño de la tabla <input type="number" id="tabla_size"></label>
+            <label>Ingrese cantidad de palabras a encontrar <input type="number" id="palabras_size"></label>
+        </div>
         <div id="palabras-a-encontrar">
             <h2>Palabras a Encontrar:</h2>
             <p id="lista-palabras"></p>
@@ -21,7 +25,7 @@
         <div id="sopa-letras"></div>
     </div>
 
-    <button onclick="nuevaSopa()">Generar Nuevo</button>
+    <button onclick="nuevaSopa()" id="btn" disabled>Generar Nuevo</button>
 
     <script src="script.js"></script>
 </body>
