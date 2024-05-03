@@ -2,8 +2,9 @@ let tamaño = 20; // Tamaño de la sopa de letras
 let cantidadPalabras = 5; // Cantidad de palabras que deseas obtener
 const palabras = [];
 let arrastre = false;
+const palabrasEnTablero = {};
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const tabla_size = document.getElementById('tabla_size');
     const palabras_size = document.getElementById('palabras_size');
     const btn = document.getElementById('btn');
@@ -32,7 +33,7 @@ function nuevaSopa() {
     tamaño = document.getElementById('tabla_size').value;
     cantidadPalabras = document.getElementById('palabras_size').value;
     palabras.splice(0, palabras.length);
-    if(document.querySelectorAll('table').length != 0){
+    if (document.querySelectorAll('table').length != 0) {
         document.querySelectorAll('table').forEach(tabla => {
             tabla.style.display = 'none';
         });
@@ -67,7 +68,7 @@ function cargarPalabrasAleatoriasDesdeArchivo(rutaArchivo, cantidadPalabras) {
         const palabrasAleatorias = [];
         const xhr = new XMLHttpRequest();
         xhr.open('GET', rutaArchivo);
-        xhr.onreadystatechange = function() {
+        xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
                     const lineas = xhr.responseText.split('\n');
@@ -75,10 +76,10 @@ function cargarPalabrasAleatoriasDesdeArchivo(rutaArchivo, cantidadPalabras) {
                     for (let i = 0; i < cantidadPalabras; i++) {
                         const indiceAleatorio = Math.floor(Math.random() * totalPalabras);
                         const palabra = lineas[indiceAleatorio].trim();
-                        if (palabra !== '' && !palabrasAleatorias.includes(palabra)) {
+                        if (palabra !== '' && palabra.length >= 4 && !palabrasAleatorias.includes(palabra)) {
                             palabrasAleatorias.push(palabra);
                         } else {
-                            i--; // Intentar nuevamente si la palabra ya está en el array
+                            i--; // Intentar nuevamente si la palabra no cumple los criterios
                         }
                     }
                     resolve(palabrasAleatorias);
@@ -109,9 +110,11 @@ function obtenerPalabras() {
                     obtenerPalabras();
                 } else {
                     generarSopa();
-                    agregarEventoClic();
+                    agregarEventoClicCeldas();
+
                     loading.style.display = 'none';
                     document.getElementById('palabras-a-encontrar').style.display = 'block';
+                    agregarEventoClicSpan();
                 }
             } else {
                 console.error('No se cargaron palabras aleatorias válidas.');
@@ -136,6 +139,9 @@ function generarSopa() {
             sopaLetras[i][j] = "";
         }
     }
+
+    const listaPalabras = document.getElementById("lista-palabras");
+    listaPalabras.textContent = '';
 
     // Insertar palabras en la sopa de letras
     palabras.forEach(palabra => {
@@ -259,8 +265,14 @@ function generarSopa() {
             }
         }
         // Actualizar la lista de palabras a encontrar
-        const listaPalabras = document.getElementById("lista-palabras");
-        listaPalabras.textContent = palabras.join(" - ");
+        let span = document.createElement('span');
+        span.textContent = palabra;
+        let space = document.createElement('span');
+        space.textContent = ' - ';
+        listaPalabras.appendChild(span);
+        if(palabra !== palabras[palabras.length - 1]){
+            listaPalabras.appendChild(space);
+        }
     });
 
     // Crear la tabla de la sopa de letras
@@ -293,17 +305,30 @@ function marcarCelda(celda) {
     }
 }
 
-function agregarEventoClic() {
+function agregarEventoClicCeldas() {
     // Agregar evento de click a cada celda de la tabla
     const celdas = document.querySelectorAll('td');
     celdas.forEach(celda => {
         celda.addEventListener('mousedown', function () {
             marcarCelda(this); // Llamar a la función para marcar la celda
         });
-        celda.addEventListener('mouseenter', function() {
-            if(arrastre){
+        celda.addEventListener('mouseenter', function () {
+            if (arrastre) {
                 marcarCelda(celda);
             }
         });
     });
+}
+
+function agregarEventoClicSpan() {
+    const spans = document.querySelectorAll('span');
+    for (let i = 0; i <= spans.length; i += 2) {
+        spans[i].addEventListener('click', () => {
+            if (spans[i].style.textDecoration === 'line-through') {
+                spans[i].style.textDecoration = 'none';
+            } else {
+                spans[i].style.textDecoration = 'line-through';
+            }
+        })
+    }
 }

@@ -14,7 +14,9 @@
         <div class="configuracion">
             <label>Ingrese tamaño de la tabla <input type="number" id="tabla_size"></label>
             <label>Ingrese cantidad de palabras a encontrar <input type="number" id="palabras_size"></label>
+            
         </div>
+        <button onclick="nuevaSopa()" id="btn" disabled>Generar Nuevo</button>
         <div id="palabras-a-encontrar">
             <h2>Palabras a Encontrar:</h2>
             <p id="lista-palabras"></p>
@@ -24,8 +26,6 @@
         </div>
         <div id="sopa-letras"></div>
     </div>
-
-    <button onclick="nuevaSopa()" id="btn" disabled>Generar Nuevo</button>
 
     <script src="script.js"></script>
 </body>
